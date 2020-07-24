@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+        <title>Country/capitals</title>
+        <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0">
+        <link rel="stylesheet" type="text/css" href="css/style.css">
+    </head>
+    <body>
+    	<h1><i>Countries and their capitals with population</h1></i>
+       <form class="search-form">
+  <input type="text" class="search" placeholder="Country or a capital">
+  <ul class="suggestions">
+    <li>Filter for a country or a capital</li>
+  </ul>
+</form>
+    <style>
+    	html {
+  box-sizing: border-box;
+  background: linear-gradient(#f4f3f3 0%, #dfdfdf 35%, #bfd8d5 100%);
+  font-family: "helvetica neue";
+  font-size: 20px;
+  font-weight: 200;
+  background-image: url(https://images.unsplash.com/photo-1500076656116-558758c991c1?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80);
+}
+h1{
+	text-align: center;
+	padding-top: 5%;
+}
+
+body {
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: inherit;
+}
+
+input {
+  width: 100%;
+  padding: 20px;
+}
+
+.search-form {
+  max-width: 600px;
+  margin: 50px auto;
+}
+
+input.search {
+  outline: 0;
+  margin: 0;
+  border: 8px solid #bfd8d5;
+  border-radius: 4px;
+  font-size: 40px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.12), inset 0 0 2px rgba(0, 0, 0, 0.19);
+}
+
+input.search::placeholder {
+  color: #d8d8d8;
+}
+
+.suggestions {
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+.suggestions li {
+  font-family: "helvetica neue", sans-serif;
+  color: #333;
+  width: 90%;
+  position: relative;
+  left: 5%;
+  background: white;
+  list-style: none;
+  border-bottom: 1px solid #d8d8d8;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.14);
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  text-transform: capitalize;
+}
+
+.suggestions li:nth-child(odd) {
+  transform: perspective(100px) rotateX(-2deg);
+  background: linear-gradient(#fff 0%, #dfdfdf 50%, #bfd8d5 100%);
+}
+
+.suggestions li:nth-child(even) {
+  transform: perspective(100px) rotateX(2deg);
+  background: linear-gradient(#bfd8d5 0%, #dfdfdf 50%, #fff 100%);
+}
+
+span.population {
+  font-size: 15px;
+}
+
+.hl {
+  background: #ffc600;
+}
+
+    </style>
+    <script>
+      const endpoint = 'https://raw.githubusercontent.com/nadktk/temp/master/countries.json';
+const input = document.querySelector('.search');
+const output = document.querySelector('.suggestions');
+let countries = [],
+searchline = "";
+
+function numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function findMatches(searchline, countries) {
+    let r = new RegExp(searchline, 'gi');
+    return [...countries].filter(c => c.country.match(r) || c.city.match(r));
+}
+
+console.time('fetch time');
+fetch(endpoint).
+then(res => res.json()).
+then(data => {
+    console.timeEnd('fetch time');
+    countries = [...data].sort((a, b) => b.population - a.population);
+});
+
+function displayMatches() {
+    if (this.value) {
+        searchline = this.value.toLowerCase();
+        let r = new RegExp(searchline, "gi");
+        console.log(countries);
+        let arr = findMatches(searchline, countries).
+        map(val => {
+            let co = val.country.replace(r, `<span class="hl">${searchline}</span>`),
+                ci = val.city.replace(r, `<span class="hl">${searchline}</span>`);
+            return `<li><span>${co}, ${ci}</span><span>${numberWithCommas(val.population)}</span></li>`;
+        });
+        output.innerHTML = arr.join``;
+    } else {
+        searchline = "";
+        output.innerHTML = [...countries].
+        map(val => `<li><span>${val.country}, capital: ${val.city}</span><span>${numberWithCommas(val.population)}</span></li>`).
+        join``;
+    }
+}
+
+input.addEventListener('keyup', displayMatches);
+        </script>
+    </body>
+</html>
